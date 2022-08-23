@@ -1,7 +1,9 @@
 # https://hub.docker.com/search?q=node
 # https://hub.docker.com/layers/node/library/node/14.16.1-alpine3.13/images/sha256-502cb0fa935ce97d0f72a816bbe31b54fcc1d70e9fc28b858c8f10d653177d0c?context=explore
 
-FROM node:14.16.1-alpine3.13
+# https://stackoverflow.com/questions/65612411/forcing-docker-to-use-linux-amd64-platform-by-default-on-macos
+
+FROM --platform=linux/amd64 node:14.16.1-alpine3.13
 RUN addgroup app && adduser -S -G app app
 USER app
 WORKDIR /app
