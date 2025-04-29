@@ -1,0 +1,48 @@
+name: Trigger auto deployment for aca-hello-world
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/aca-hello-world-AutoDeployTrigger-ea3372ca-2708-4d28-a6b4-02e9f36fb46a.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.ACAHELLOWORLD_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.ACAHELLOWORLD_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.ACAHELLOWORLD_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          registryUrl: mwfenv19d33d6.azurecr.io
+          registryUsername: ${{ secrets.ACAHELLOWORLD_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.ACAHELLOWORLD_REGISTRY_PASSWORD }}
+          containerAppName: aca-hello-world
+          resourceGroup: mwf-env1
+          imageToBuild: mwfenv19d33d6.azurecr.io/aca-hello-world:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
